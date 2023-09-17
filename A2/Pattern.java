@@ -13,13 +13,10 @@ public class Pattern {
 
     // Calculate the hash code of the pattern
     int patternHash = StringHash(pattern);
+    // Calculate the hash code of the first window of text
+    int textHash = StringHash(text.substring(0, pattern.length()));
 
     for (int i = 0; i <= text.length() - pattern.length() + 1; i++) {
-      // rolling hash for the next window for text
-      if (i < text.length() - pattern.length()) {
-        // Add the next character
-        textHash = StringHash(text.substring(i, pattern.length() + i));
-      }
       if (textHash == patternHash) {
         boolean isMatch = true;
         for (int j = 0; j < pattern.length(); j++) {
@@ -31,6 +28,11 @@ public class Pattern {
         if (isMatch) {
           occurrences++;
         }
+      }
+      // rolling hash for the next window for text
+      if (i < text.length() - pattern.length()) {
+        // Add the next character
+        textHash = StringHash(text.substring(i+1, pattern.length() + i+1));
       }
     }
     System.out.println(occurrences);
