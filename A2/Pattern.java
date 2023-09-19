@@ -16,7 +16,7 @@ public class Pattern {
     // Calculate the hash code of the first window of text
     int textHash = StringHash(text.substring(0, pattern.length()));
 
-    for (int i = 0; i <= text.length() - pattern.length() + 1; i++) {
+    for (int i = 0; i <= text.length() - pattern.length(); i++) {
       if (textHash == patternHash) {
         boolean isMatch = true;
         for (int j = 0; j < pattern.length(); j++) {
@@ -29,10 +29,9 @@ public class Pattern {
           occurrences++;
         }
       }
-      // rolling hash for the next window for text
+      // Calculate the hash code of the next window of text
       if (i < text.length() - pattern.length()) {
-        // Add the next character
-        textHash = StringHash(text.substring(i+1, pattern.length() + i+1));
+        textHash = StringHash(text.substring(i + 1, i + pattern.length() + 1));
       }
     }
     System.out.println(occurrences);
