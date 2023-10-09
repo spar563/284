@@ -1,11 +1,10 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class Bipartite {
   private int order;
@@ -18,7 +17,7 @@ public class Bipartite {
 
     for (int i = 0; i < order; i++) {
       if (colors[i] == -1) {
-        if (!bipartiteBFS(i, colors)) {
+        if (!bipartiteDFS(i, colors, 0)) {
           return false;
         }
       }
@@ -27,24 +26,16 @@ public class Bipartite {
     return true;
   }
 
-  private boolean bipartiteBFS(int start, int[] colors) {
-    Queue<Integer> queue = new LinkedList<>();
-    queue.offer(start);
-    colors[start] = 0; // Mark the starting node as color 0
+  private boolean bipartiteDFS(int node, int[] colors, int color) {
+    colors[node] = color;
 
-    while (!queue.isEmpty()) {
-      int current = queue.poll();
-      int currentColor = colors[current];
+    for (int neighbor : adjList.get(node)) {
+      if (colors[neighbor] == color) {
+        return false; // Not bipartite if neighboring nodes have the same color
+      }
 
-      for (int neighbor : adjList.get(current)) {
-        if (colors[neighbor] == currentColor) {
-          return false; // Not bipartite if neighboring nodes have the same color
-        }
-
-        if (colors[neighbor] == -1) {
-          colors[neighbor] = 1 - currentColor; // Assign the opposite color (0 or 1)
-          queue.offer(neighbor);
-        }
+      if (colors[neighbor] == -1 && !bipartiteDFS(neighbor, colors, 1 - color)) {
+        return false; // Recursively visit neighbors with the opposite color
       }
     }
 
