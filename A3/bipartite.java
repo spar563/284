@@ -1,45 +1,25 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
-import java.util.StringTokenizer;
 
 public class Bipartite {
-  private static int order; // Number of nodes
-  private static int[][] graph; // Adjacency matrix
+  private int order;
+  private List<List<Integer>> adjList;
+  private boolean isBipartite;
 
   private boolean isBipartite() {
-    int[] colors = new int[order]; // Store the color of each node (0 or 1)
-
+    int[] colors = new int[order];
+    Arrays.fill(colors, -1); // -1 represents no color (unvisited)
 
     for (int i = 0; i < order; i++) {
       if (colors[i] == -1) {
-        if (!bfs(i, colors)) {
-          return false; // If any component is not bipartite, return false.
-        }
-      }
-    }
-
-    return true; // If all components are bipartite, return true.
-  }
-
-  private boolean bfs(int startNode, int[] colors) {
-    Queue<Integer> queue = new LinkedList<>();
-    queue.offer(startNode);
-    colors[startNode] = 1; // Color the start node with 0.
-
-    while (!queue.isEmpty()) {
-      int currentNode = queue.poll();
-
-      for (int neighbor = 0; neighbor < order; neighbor++) {
-        if (graph[currentNode][neighbor] == 1) {
-          if (colors[neighbor] == 0) {
-            colors[neighbor] = -colors[currentNode]; // Assign the opposite color.
-            queue.offer(neighbor);
-          } else if (colors[neighbor] == colors[currentNode]) {
-            return false; // Graph is not bipartite if adjacent nodes have the same color.
-          }
+        if (!bipartiteBFS(i, colors)) {
+          return false;
         }
       }
     }
@@ -47,55 +27,63 @@ public class Bipartite {
     return true;
   }
 
-  public static void main(String[] args) {
-    FastScanner scan = new FastScanner();
+  private boolean bipartiteBFS(int start, int[] colors) {
+    Queue<Integer> queue = new LinkedList<>();
+    queue.offer(start);
+    colors[start] = 0; // Mark the starting node as color 0
 
-    while(true) {
-      order = scan.nextInt();
+    while (!queue.isEmpty()) {
+      int current = queue.poll();
+      int currentColor = colors[current];
+
+      for (int neighbor : adjList.get(current)) {
+        if (colors[neighbor] == currentColor) {
+          return false; // Not bipartite if neighboring nodes have the same color
+        }
+
+        if (colors[neighbor] == -1) {
+          colors[neighbor] = 1 - currentColor; // Assign the opposite color (0 or 1)
+          queue.offer(neighbor);
+        }
+      }
+    }
+
+    return true;
+  }
+
+  public static void main(String[] args) throws IOException {
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    StringBuilder result = new StringBuilder();
+
+    while (true) {
+      int order = Integer.parseInt(br.readLine());
       if (order == 0) {
         break;
       }
 
-      graph = new int[order][order];
-
+      Bipartite bipartiteDetector = new Bipartite();
+      bipartiteDetector.order = order;
+      bipartiteDetector.adjList = new ArrayList<>(order);
       for (int i = 0; i < order; i++) {
-        String[] neighbors = scan.nextLine().split(" ");
-        for (String neighbor : neighbors) {
-          int neighborNode = Integer.parseInt(neighbor);
-          graph[i][neighborNode] = 1;
-          graph[neighborNode][i] = 1;
+        bipartiteDetector.adjList.add(new ArrayList<>());
+      }
+
+      // Read the graph's adjacency lists
+      for (int i = 0; i < order; i++) {
+        String[] input = br.readLine().split(" ");
+        for (String string : input) {
+          if (!string.isEmpty()) {
+            int neighbor = Integer.parseInt(string);
+            bipartiteDetector.adjList.get(i).add(neighbor);
+          }
         }
       }
-    }
-    Bipartite bipartite = new Bipartite();
-    System.out.println(bipartite.isBipartite() ? "1" : "0");
-    
-  }
 
-  static class FastScanner {
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    StringTokenizer st = new StringTokenizer("");
-
-    String next() {
-      while (!st.hasMoreTokens())
-        try {
-          st = new StringTokenizer(br.readLine());
-        } catch (IOException e) {
-        }
-      return st.nextToken();
+      bipartiteDetector.isBipartite = bipartiteDetector.isBipartite(); // Update isBipartite field
+      result.append(bipartiteDetector.isBipartite ? "1\n" : "0\n");
     }
 
-    int nextInt() {
-      return Integer.parseInt(next());
-    }
-
-    String nextLine() {
-      String str = "";
-      try {
-        str = br.readLine();
-      } catch (IOException e) {
-      }
-      return str;
-    }
+    System.out.print(result.toString());
+    br.close();
   }
 }
