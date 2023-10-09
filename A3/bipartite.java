@@ -1,44 +1,44 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
 public class Bipartite {
   private static int order;
-  private static int[][] adjList;
-  private boolean isBipartite;
+  private static int[][] adjMatrix;
+  private static int[] colors;
 
-  private boolean isBipartite() {
-    int[] colors = new int[order]; // 0: uncolored, 1: black, -1: white
+  private static boolean isBipartite() {
+    colors = new int[order]; // 0: uncolored, 1: color 1, 2: color 2
 
     for (int i = 0; i < order; i++) {
-      if (colors[i] == 0 && !bipartiteBFS(i, colors)) {
-        return false;
-
+      if (colors[i] == 0) {
+        if (!bipartiteBFS(i)) {
+          return false;
+        }
       }
     }
 
     return true;
   }
 
-  private boolean bipartiteBFS(int start, int[] colors) {
+  private static boolean bipartiteBFS(int start) {
     Queue<Integer> queue = new LinkedList<>();
     queue.offer(start);
-    colors[start] = 0; // Mark the starting node as color 0
+    colors[start] = 1; // Start with color 1
 
     while (!queue.isEmpty()) {
       int current = queue.poll();
+      int currentColor = colors[current];
+
       for (int neighbor = 0; neighbor < order; neighbor++) {
-        if (adjList[current][neighbor] == 0) {
-          if (colors[neighbor] == -1) {
-            colors[neighbor] = 1 - colors[current]; // Assign the opposite color
+        if (adjMatrix[current][neighbor] == 1) {
+          if (colors[neighbor] == 0) {
+            colors[neighbor] = 3 - currentColor; // Assign the opposite color (1 or 2)
             queue.offer(neighbor);
-          } else if (colors[neighbor] == colors[current]) {
-            return false;
+          } else if (colors[neighbor] == currentColor) {
+            return false; // Not bipartite if neighboring nodes have the same color
           }
         }
       }
@@ -52,12 +52,12 @@ public class Bipartite {
     StringBuilder result = new StringBuilder();
 
     while (true) {
-      int order = Integer.parseInt(br.readLine());
+      order = Integer.parseInt(br.readLine());
       if (order == 0) {
         break;
       }
 
-      adjList = new int[order][order];
+      adjMatrix = new int[order][order];
 
       // Read the graph's adjacency lists
       for (int i = 0; i < order; i++) {
@@ -65,14 +65,17 @@ public class Bipartite {
         for (String string : input) {
           if (!string.isEmpty()) {
             int neighbor = Integer.parseInt(string);
-            adjList[i][neighbor] = 1;
-            adjList[neighbor][i] = 1;
+            adjMatrix[i][neighbor] = 1;
+            adjMatrix[neighbor][i] = 1;
           }
         }
       }
 
-      Bipartite bipartite = new Bipartite();
-      System.out.println(bipartite.isBipartite() ? "1" : "0");
+      if (isBipartite()) {
+        result.append("1\n");
+      } else {
+        result.append("0\n");
+      }
     }
 
     System.out.print(result.toString());
